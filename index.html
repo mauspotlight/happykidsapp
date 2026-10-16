@@ -310,7 +310,8 @@ function render(){
   S.clearForm=false;
   if(!S.ready){ app.innerHTML=`<div class="wrap center"><div class="card"><img class="logo" alt="Happy Kids" src="${svgUrl(LOGO)}"><div class="stripe"></div><p>Conectando con la agenda…</p></div></div>`; return; }
   if(S.dbMissing){ app.innerHTML=`<div class="wrap center"><div class="card"><img class="logo" alt="Happy Kids" src="${svgUrl(LOGO)}"><div class="stripe"></div><h1>Agenda de reservas</h1><p>Esta vista no tiene acceso al almacén de reservas. Ábrela con una cuenta de Claude que tenga acceso a esta página.</p></div></div>`; return; }
-  if(!S.staff || S.staff.length===0){ app.innerHTML=setupView(); bindSetup(); return; }
+  if((!S.staff || S.staff.length===0) && S.me!==GUEST){ app.innerHTML=setupView(); bindSetup(); return; }
+  if(!S.staff) S.staff=[];
   if(!S.me){ app.innerHTML=loginView(); bindLogin(); return; }
   app.innerHTML=shell();
   bindShell();
@@ -329,9 +330,12 @@ function setupView(){
   <label class="f">Usuario<input class="in" id="su-user" required autocomplete="username" placeholder="Ej. carla"></label>
   <label class="f">Contraseña<input class="in" id="su-pw" type="password" required minlength="6" autocomplete="new-password"></label>
   <div class="err" id="su-err"></div>
-  <button class="btn" type="submit">Crear y entrar</button></form></div>`;
+  <button class="btn" type="submit">Crear y entrar</button>
+  <button class="btn ghost" type="button" id="guestbtn">Entrar como invitado</button>
+  <p>Como invitado puedes ver y registrar reservas, pero no eliminarlas.</p></form></div>`;
 }
 function bindSetup(){
+  document.getElementById('guestbtn').onclick=()=>{S.me=GUEST;S.view='cal';store('hk_user',GUEST.id);render()};
   document.getElementById('setup').addEventListener('submit',async e=>{
     e.preventDefault();
     const name=val('su-name'), user=slugUser(val('su-user')), pw=document.getElementById('su-pw').value;
